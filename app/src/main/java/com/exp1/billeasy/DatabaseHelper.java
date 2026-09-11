@@ -8,6 +8,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -366,6 +369,129 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[]{
                         String.valueOf(billId)
                 }
+        );
+    }
+
+    // =========================
+// GET TOTAL PRODUCT COUNT
+// =========================
+
+    public int getProductCount() {
+
+        SQLiteDatabase db =
+                this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery(
+                "SELECT COUNT(*) FROM Products",
+                null
+        );
+
+        int count = 0;
+
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+
+        cursor.close();
+
+        return count;
+    }
+
+
+// =========================
+// GET LOW STOCK COUNT
+// =========================
+
+    public int getLowStockCount() {
+
+        SQLiteDatabase db =
+                this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery(
+                "SELECT COUNT(*) FROM Products WHERE quantity <= 5",
+                null
+        );
+
+        int count = 0;
+
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+
+        cursor.close();
+
+        return count;
+    }
+
+
+// =========================
+// GET TODAY'S REVENUE
+// =========================
+
+    public double getTodayRevenue() {
+
+        SQLiteDatabase db =
+                this.getReadableDatabase();
+
+        double revenue = 0;
+
+        Cursor cursor = db.rawQuery(
+                "SELECT total, date FROM Bills",
+                null
+        );
+
+        SimpleDateFormat dateFormat =
+                new SimpleDateFormat(
+                        "dd MMM yyyy, hh:mm a",
+                        Locale.getDefault()
+                );
+
+        String today =
+                new SimpleDateFormat(
+                        "dd MMM yyyy",
+                        Locale.getDefault()
+                ).format(new Date());
+
+        if (cursor.moveToFirst()) {
+
+            do {
+
+                double total =
+                        cursor.getDouble(
+                                cursor.getColumnIndexOrThrow("total")
+                        );
+
+                String billDate =
+                        cursor.getString(
+                                cursor.getColumnIndexOrThrow("date")
+                        );
+
+                if (billDate != null &&
+                        billDate.startsWith(today)) {
+
+                    revenue += total;
+                }
+
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+
+        return revenue;
+    }
+
+    // =========================
+// GET LATEST BILL
+// =========================
+
+    public Cursor getLatestBill() {
+
+        SQLiteDatabase db =
+                this.getReadableDatabase();
+
+        return db.rawQuery(
+                "SELECT * FROM Bills ORDER BY id DESC LIMIT 1",
+                null
         );
     }
 

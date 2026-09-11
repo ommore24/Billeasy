@@ -3,12 +3,10 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#F6F7FB">
-
 
     <!-- HEADER -->
 
@@ -26,7 +24,9 @@
             android:focusable="true"
             app:cardBackgroundColor="#FFFFFF"
             app:cardCornerRadius="21dp"
-            app:cardElevation="0dp">
+            app:cardElevation="0dp"
+            app:strokeColor="#E5E7ED"
+            app:strokeWidth="1dp">
 
             <TextView
                 android:layout_width="match_parent"
@@ -38,7 +38,6 @@
                 android:textStyle="bold" />
 
         </com.google.android.material.card.MaterialCardView>
-
 
         <LinearLayout
             android:layout_width="0dp"
@@ -61,7 +60,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
-                android:text="10 Sep 2026"
+                android:text="11 Sep 2026"
                 android:textColor="#777B89"
                 android:textSize="12sp" />
 
@@ -84,7 +83,6 @@
             android:paddingEnd="20dp"
             android:paddingBottom="30dp">
 
-
             <!-- CUSTOMER -->
 
             <com.google.android.material.card.MaterialCardView
@@ -104,8 +102,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="CUSTOMER"
-                        android:textColor="#777B89"
-                        android:textSize="11sp"
+                        android:textColor="#858895"
+                        android:textSize="10sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -113,9 +111,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
-                        android:text="Rahul"
+                        android:text="Walk-in Customer"
                         android:textColor="#171A24"
-                        android:textSize="17sp"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -128,8 +126,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="25dp"
-                android:text="Items"
+                android:layout_marginTop="24dp"
+                android:text="Purchased items"
                 android:textColor="#171A24"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -138,16 +136,16 @@
                 android:id="@+id/recyclerBillItems"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="11dp"
                 android:nestedScrollingEnabled="false" />
 
 
-            <!-- TOTAL -->
+            <!-- SUMMARY -->
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
+                android:layout_marginTop="10dp"
                 app:cardBackgroundColor="#202B52"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="0dp">
@@ -162,7 +160,7 @@
                         android:id="@+id/tvSubtotal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Subtotal     ₹0"
+                        android:text="Subtotal     ₹0.00"
                         android:textColor="#D6DAE7"
                         android:textSize="14sp" />
 
@@ -170,8 +168,8 @@
                         android:id="@+id/tvDiscount"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Discount     ₹0"
+                        android:layout_marginTop="9dp"
+                        android:text="Discount     ₹0.00"
                         android:textColor="#D6DAE7"
                         android:textSize="14sp" />
 
@@ -179,25 +177,34 @@
                         android:id="@+id/tvGst"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="GST     ₹0"
+                        android:layout_marginTop="9dp"
+                        android:text="GST     ₹0.00"
                         android:textColor="#D6DAE7"
                         android:textSize="14sp" />
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:layout_marginTop="14dp"
+                        android:layout_marginTop="15dp"
                         android:background="#505A7B" />
 
                     <TextView
                         android:id="@+id/tvGrandTotal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="13dp"
-                        android:text="₹0"
+                        android:layout_marginTop="14dp"
+                        android:text="₹0.00"
                         android:textColor="#FFFFFF"
-                        android:textSize="27sp"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="TOTAL AMOUNT"
+                        android:textColor="#BFC6DD"
+                        android:textSize="10sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>

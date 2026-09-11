@@ -3,33 +3,31 @@ package com.exp1.billeasy;
 public class BillItem {
 
     private int id;
-    private String name;
+    private String productName;
     private double price;
     private int quantity;
     private double total;
 
-
     public BillItem(
             int id,
-            String name,
+            String productName,
             double price,
             int quantity,
             double total) {
 
         this.id = id;
-        this.name = name;
+        this.productName = productName;
         this.price = price;
         this.quantity = quantity;
         this.total = total;
     }
 
-
     public int getId() {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public String getProductName() {
+        return productName;
     }
 
     public double getPrice() {

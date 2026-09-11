@@ -14,15 +14,11 @@ import java.util.Locale;
 public class BillItemAdapter
         extends RecyclerView.Adapter<BillItemAdapter.ViewHolder> {
 
-    private ArrayList<BillItem> items;
+    private final ArrayList<BillItem> items;
 
-
-    public BillItemAdapter(
-            ArrayList<BillItem> items) {
-
+    public BillItemAdapter(ArrayList<BillItem> items) {
         this.items = items;
     }
-
 
     @NonNull
     @Override
@@ -30,10 +26,8 @@ public class BillItemAdapter
             @NonNull ViewGroup parent,
             int viewType) {
 
-        View view =
-                LayoutInflater.from(
-                        parent.getContext()
-                ).inflate(
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(
                         R.layout.item_bill_detail,
                         parent,
                         false
@@ -42,87 +36,70 @@ public class BillItemAdapter
         return new ViewHolder(view);
     }
 
-
     @Override
     public void onBindViewHolder(
             @NonNull ViewHolder holder,
             int position) {
 
-        BillItem item =
-                items.get(position);
+        BillItem item = items.get(position);
 
-
-        holder.tvName.setText(
-                item.getName()
+        holder.tvProductName.setText(
+                item.getProductName()
         );
-
 
         holder.tvQuantity.setText(
                 "Qty: " + item.getQuantity()
         );
 
-
         holder.tvPrice.setText(
-                "₹" +
-                        String.format(
-                                Locale.getDefault(),
-                                "%.2f",
-                                item.getPrice()
-                        )
+                "₹" + format(item.getPrice())
         );
-
 
         holder.tvTotal.setText(
-                "₹" +
-                        String.format(
-                                Locale.getDefault(),
-                                "%.2f",
-                                item.getTotal()
-                        )
+                "₹" + format(item.getTotal())
         );
     }
-
 
     @Override
     public int getItemCount() {
-
         return items.size();
     }
 
+    private String format(double value) {
+
+        return String.format(
+                Locale.getDefault(),
+                "%.2f",
+                value
+        );
+    }
 
     static class ViewHolder
             extends RecyclerView.ViewHolder {
 
-        TextView tvName;
+        TextView tvProductName;
         TextView tvQuantity;
         TextView tvPrice;
         TextView tvTotal;
 
-
         ViewHolder(@NonNull View itemView) {
-
             super(itemView);
 
+            tvProductName = itemView.findViewById(
+                    R.id.tvProductName
+            );
 
-            tvName =
-                    itemView.findViewById(
-                            R.id.tvName
-                    );
+            tvQuantity = itemView.findViewById(
+                    R.id.tvQuantity
+            );
 
-            tvQuantity =
-                    itemView.findViewById(
-                            R.id.tvQuantity
-                    );
+            tvPrice = itemView.findViewById(
+                    R.id.tvPrice
+            );
 
-            tvPrice =
-                    itemView.findViewById(
-                            R.id.tvPrice
-                    );
-
-            tvTotal =
-                    itemView.findViewById(
-                            R.id.tvTotal
-                    );
+            tvTotal = itemView.findViewById(
+                    R.id.tvTotal
+            );
         }
     }
 }
