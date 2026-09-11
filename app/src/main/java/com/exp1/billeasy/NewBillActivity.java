@@ -1,8 +1,7 @@
 package com.exp1.billeasy;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,11 +9,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 
-import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
+import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,19 +20,17 @@ import java.util.Locale;
 
 public class NewBillActivity extends AppCompatActivity {
 
-    private MaterialCardView btnBack;
-
     private TextInputEditText etCustomerName;
     private TextInputEditText etDiscount;
     private TextInputEditText etGst;
 
+    private TextView tvSubtotal;
+    private TextView tvDiscount;
+    private TextView tvGst;
+    private TextView tvGrandTotal;
+
     private RecyclerView recyclerProducts;
     private RecyclerView recyclerCart;
-
-    private android.widget.TextView tvSubtotal;
-    private android.widget.TextView tvDiscount;
-    private android.widget.TextView tvGst;
-    private android.widget.TextView tvGrandTotal;
 
     private MaterialButton btnSaveBill;
 
@@ -44,8 +39,9 @@ public class NewBillActivity extends AppCompatActivity {
     private ArrayList<Product> productList;
     private ArrayList<CartItem> cartList;
 
-    private ProductAdapter productAdapter;
+    private ProductBillingAdapter productAdapter;
     private CartAdapter cartAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,24 +55,21 @@ public class NewBillActivity extends AppCompatActivity {
 
         setupBackButton();
 
-        setupProductRecyclerView();
+        setupProducts();
 
-        setupCartRecyclerView();
+        setupCart();
 
-        setupCalculationListeners();
-
-        loadProducts();
+        setupInputListeners();
 
         calculateBill();
     }
 
-    // ----------------------------------------------------
+
+    // -----------------------------------------
     // INITIALIZE VIEWS
-    // ----------------------------------------------------
+    // -----------------------------------------
 
     private void initializeViews() {
-
-        btnBack = findViewById(R.id.btnBack);
 
         etCustomerName =
                 findViewById(R.id.etCustomerName);
@@ -86,12 +79,6 @@ public class NewBillActivity extends AppCompatActivity {
 
         etGst =
                 findViewById(R.id.etGst);
-
-        recyclerProducts =
-                findViewById(R.id.recyclerProducts);
-
-        recyclerCart =
-                findViewById(R.id.recyclerCart);
 
         tvSubtotal =
                 findViewById(R.id.tvSubtotal);
@@ -105,117 +92,117 @@ public class NewBillActivity extends AppCompatActivity {
         tvGrandTotal =
                 findViewById(R.id.tvGrandTotal);
 
+        recyclerProducts =
+                findViewById(R.id.recyclerProducts);
+
+        recyclerCart =
+                findViewById(R.id.recyclerCart);
+
         btnSaveBill =
                 findViewById(R.id.btnSaveBill);
-
-        cartList = new ArrayList<>();
-
-        btnSaveBill.setOnClickListener(
-                v -> saveBill()
-        );
     }
 
-    // ----------------------------------------------------
+
+    // -----------------------------------------
     // BACK BUTTON
-    // ----------------------------------------------------
+    // -----------------------------------------
 
     private void setupBackButton() {
 
-        btnBack.setOnClickListener(v -> finish());
+        findViewById(R.id.btnBack).setOnClickListener(v -> {
+            finish();
+        });
     }
 
-    // ----------------------------------------------------
-    // PRODUCT LIST
-    // ----------------------------------------------------
 
-    private void setupProductRecyclerView() {
+    // -----------------------------------------
+    // PRODUCTS
+    // -----------------------------------------
 
-        productList = new ArrayList<>();
+    private void setupProducts() {
+
+        productList =
+                databaseHelper.getAllProducts();
 
         recyclerProducts.setLayoutManager(
                 new LinearLayoutManager(this)
         );
 
-        productAdapter = new ProductAdapter(
-                this,
-                productList,
-                product -> addProductToCart(product)
-        );
+        productAdapter =
+                new ProductBillingAdapter(
+                        this,
+                        productList,
+                        this::addProductToCart
+                );
 
         recyclerProducts.setAdapter(productAdapter);
     }
 
-    private void loadProducts() {
 
-        productList.clear();
-
-        productList.addAll(
-                databaseHelper.getAllProducts()
-        );
-
-        productAdapter.notifyDataSetChanged();
-    }
-
-    // ----------------------------------------------------
+    // -----------------------------------------
     // CART
-    // ----------------------------------------------------
+    // -----------------------------------------
 
-    private void setupCartRecyclerView() {
+    private void setupCart() {
+
+        cartList = new ArrayList<>();
 
         recyclerCart.setLayoutManager(
                 new LinearLayoutManager(this)
         );
 
-        cartAdapter = new CartAdapter(
+        cartAdapter =
+                new CartAdapter(
+                        cartList,
+                        new CartAdapter.CartListener() {
 
-                cartList,
-                new CartAdapter.CartListener() {
+                            @Override
+                            public void onQuantityChanged() {
+                                calculateBill();
+                            }
 
-                    @Override
-                    public void onQuantityChanged() {
-                        calculateBill();
-                    }
+                            @Override
+                            public void onRemove(int position) {
 
-                    @Override
-                    public void onRemove(int position) {
+                                if (position >= 0 &&
+                                        position < cartList.size()) {
 
-                        if (position >= 0 &&
-                                position < cartList.size()) {
+                                    cartList.remove(position);
 
-                            cartList.remove(position);
+                                    cartAdapter.notifyItemRemoved(
+                                            position
+                                    );
 
-                            cartAdapter.notifyItemRemoved(
-                                    position
-                            );
-
-                            calculateBill();
+                                    calculateBill();
+                                }
+                            }
                         }
-                    }
-                }
-        );
+                );
 
         recyclerCart.setAdapter(cartAdapter);
     }
 
-    // ----------------------------------------------------
+
+    // -----------------------------------------
     // ADD PRODUCT TO CART
-    // ----------------------------------------------------
+    // -----------------------------------------
 
     private void addProductToCart(Product product) {
 
-        // Do not allow products with zero stock
         if (product.getQuantity() <= 0) {
 
             Toast.makeText(
                     this,
-                    "This product is out of stock",
+                    "Product is out of stock",
                     Toast.LENGTH_SHORT
             ).show();
 
             return;
         }
 
-        // Check whether product is already in cart
+
+        // Check if already in cart
+
         for (CartItem item : cartList) {
 
             if (item.getProductId() == product.getId()) {
@@ -244,14 +231,17 @@ public class NewBillActivity extends AppCompatActivity {
             }
         }
 
-        // Product is not already in cart
-        CartItem cartItem = new CartItem(
-                product.getId(),
-                product.getName(),
-                product.getPrice(),
-                1,
-                product.getQuantity()
-        );
+
+        // Add new item
+
+        CartItem cartItem =
+                new CartItem(
+                        product.getId(),
+                        product.getName(),
+                        product.getPrice(),
+                        1,
+                        product.getQuantity()
+                );
 
         cartList.add(cartItem);
 
@@ -260,80 +250,46 @@ public class NewBillActivity extends AppCompatActivity {
         );
 
         calculateBill();
-
-        Toast.makeText(
-                this,
-                product.getName() + " added to bill",
-                Toast.LENGTH_SHORT
-        ).show();
     }
 
-    // ----------------------------------------------------
-    // DISCOUNT / GST LISTENERS
-    // ----------------------------------------------------
 
-    private void setupCalculationListeners() {
+    // -----------------------------------------
+    // INPUT LISTENERS
+    // -----------------------------------------
 
-        etDiscount.addTextChangedListener(
-                new TextWatcher() {
+    private void setupInputListeners() {
 
-                    @Override
-                    public void beforeTextChanged(
-                            CharSequence s,
-                            int start,
-                            int count,
-                            int after) {
-                    }
+        etDiscount.setOnFocusChangeListener(
+                (v, hasFocus) -> {
 
-                    @Override
-                    public void onTextChanged(
-                            CharSequence s,
-                            int start,
-                            int before,
-                            int count) {
-
+                    if (!hasFocus) {
                         calculateBill();
-                    }
-
-                    @Override
-                    public void afterTextChanged(
-                            Editable s) {
                     }
                 }
         );
 
-        etGst.addTextChangedListener(
-                new TextWatcher() {
+        etGst.setOnFocusChangeListener(
+                (v, hasFocus) -> {
 
-                    @Override
-                    public void beforeTextChanged(
-                            CharSequence s,
-                            int start,
-                            int count,
-                            int after) {
-                    }
-
-                    @Override
-                    public void onTextChanged(
-                            CharSequence s,
-                            int start,
-                            int before,
-                            int count) {
-
+                    if (!hasFocus) {
                         calculateBill();
-                    }
-
-                    @Override
-                    public void afterTextChanged(
-                            Editable s) {
                     }
                 }
         );
+
+
+        btnSaveBill.setOnClickListener(v -> {
+
+            calculateBill();
+
+            saveBill();
+        });
     }
 
-    // ----------------------------------------------------
+
+    // -----------------------------------------
     // CALCULATE BILL
-    // ----------------------------------------------------
+    // -----------------------------------------
 
     private void calculateBill() {
 
@@ -344,57 +300,79 @@ public class NewBillActivity extends AppCompatActivity {
             subtotal += item.getTotal();
         }
 
-        double discount =
-                getNumberFromField(etDiscount);
 
-        double gstPercentage =
-                getNumberFromField(etGst);
+        double discount = getDiscount();
 
-        // Prevent discount greater than subtotal
-        if (discount > subtotal) {
-            discount = subtotal;
-        }
+        double gstPercentage = getGst();
 
-        double amountAfterDiscount =
+
+        // Prevent negative subtotal
+
+        double afterDiscount =
                 subtotal - discount;
 
+        if (afterDiscount < 0) {
+            afterDiscount = 0;
+        }
+
+
         double gstAmount =
-                amountAfterDiscount *
-                        gstPercentage / 100.0;
+                afterDiscount *
+                        gstPercentage / 100;
+
 
         double grandTotal =
-                amountAfterDiscount + gstAmount;
+                afterDiscount + gstAmount;
+
 
         tvSubtotal.setText(
                 "Subtotal     ₹" +
-                        String.format("%.2f", subtotal)
+                        String.format(
+                                Locale.getDefault(),
+                                "%.2f",
+                                subtotal
+                        )
         );
 
         tvDiscount.setText(
                 "Discount     ₹" +
-                        String.format("%.2f", discount)
+                        String.format(
+                                Locale.getDefault(),
+                                "%.2f",
+                                discount
+                        )
         );
 
         tvGst.setText(
                 "GST     ₹" +
-                        String.format("%.2f", gstAmount)
+                        String.format(
+                                Locale.getDefault(),
+                                "%.2f",
+                                gstAmount
+                        )
         );
 
         tvGrandTotal.setText(
                 "₹" +
-                        String.format("%.2f", grandTotal)
+                        String.format(
+                                Locale.getDefault(),
+                                "%.2f",
+                                grandTotal
+                        )
         );
     }
 
-    private double getNumberFromField(
-            TextInputEditText field) {
+
+    // -----------------------------------------
+    // GET DISCOUNT
+    // -----------------------------------------
+
+    private double getDiscount() {
 
         String value =
-                field.getText() == null
-                        ? ""
-                        : field.getText()
-                          .toString()
-                          .trim();
+                etDiscount.getText()
+                        .toString()
+                        .trim();
 
         if (value.isEmpty()) {
             return 0;
@@ -402,35 +380,59 @@ public class NewBillActivity extends AppCompatActivity {
 
         try {
 
-            double number =
+            double discount =
                     Double.parseDouble(value);
 
-            if (number < 0) {
-                return 0;
-            }
+            return Math.max(0, discount);
 
-            return number;
-
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
 
             return 0;
         }
     }
 
-    // ----------------------------------------------------
+
+    // -----------------------------------------
+    // GET GST
+    // -----------------------------------------
+
+    private double getGst() {
+
+        String value =
+                etGst.getText()
+                        .toString()
+                        .trim();
+
+        if (value.isEmpty()) {
+            return 0;
+        }
+
+        try {
+
+            double gst =
+                    Double.parseDouble(value);
+
+            return Math.max(0, gst);
+
+        } catch (Exception e) {
+
+            return 0;
+        }
+    }
+
+
+    // -----------------------------------------
     // SAVE BILL
-    // ----------------------------------------------------
+    // -----------------------------------------
 
     private void saveBill() {
 
         String customerName =
-                etCustomerName.getText() == null
-                        ? ""
-                        : etCustomerName.getText()
-                          .toString()
-                          .trim();
+                etCustomerName.getText()
+                        .toString()
+                        .trim();
 
-        // Validate customer
+
         if (customerName.isEmpty()) {
 
             etCustomerName.setError(
@@ -442,7 +444,7 @@ public class NewBillActivity extends AppCompatActivity {
             return;
         }
 
-        // Validate cart
+
         if (cartList.isEmpty()) {
 
             Toast.makeText(
@@ -454,146 +456,121 @@ public class NewBillActivity extends AppCompatActivity {
             return;
         }
 
+
+        // Calculate final values
+
         double subtotal = 0;
 
         for (CartItem item : cartList) {
+
             subtotal += item.getTotal();
         }
 
-        double discount =
-                getNumberFromField(etDiscount);
 
-        double gstPercentage =
-                getNumberFromField(etGst);
+        double discount = getDiscount();
 
-        if (discount > subtotal) {
-            discount = subtotal;
-        }
+        double gstPercentage = getGst();
 
-        double amountAfterDiscount =
+
+        double afterDiscount =
                 subtotal - discount;
 
+        if (afterDiscount < 0) {
+            afterDiscount = 0;
+        }
+
+
         double gstAmount =
-                amountAfterDiscount *
-                        gstPercentage / 100.0;
+                afterDiscount *
+                        gstPercentage / 100;
+
 
         double grandTotal =
-                amountAfterDiscount + gstAmount;
+                afterDiscount + gstAmount;
+
 
         String date =
                 new SimpleDateFormat(
-                        "yyyy-MM-dd HH:mm:ss",
+                        "dd MMM yyyy, hh:mm a",
                         Locale.getDefault()
                 ).format(new Date());
 
-        SQLiteDatabase db =
-                databaseHelper.getWritableDatabase();
 
-        db.beginTransaction();
+        // Create bill
 
-        long billId = -1;
-
-        try {
-
-            // ------------------------------------------------
-            // CREATE BILL
-            // ------------------------------------------------
-
-            billId = databaseHelper.createBill(
-                    customerName,
-                    subtotal,
-                    discount,
-                    gstAmount,
-                    grandTotal,
-                    date
-            );
-
-            if (billId == -1) {
-
-                throw new Exception(
-                        "Unable to create bill"
+        long billId =
+                databaseHelper.createBill(
+                        customerName,
+                        subtotal,
+                        discount,
+                        gstAmount,
+                        grandTotal,
+                        date
                 );
-            }
 
-            // ------------------------------------------------
-            // SAVE BILL ITEMS + REDUCE STOCK
-            // ------------------------------------------------
 
-            for (CartItem item : cartList) {
-
-                // Verify stock one more time before saving
-                Product currentProduct =
-                        findProductById(
-                                item.getProductId()
-                        );
-
-                if (currentProduct == null) {
-
-                    throw new Exception(
-                            "Product no longer exists"
-                    );
-                }
-
-                if (item.getQuantity() >
-                        currentProduct.getQuantity()) {
-
-                    throw new Exception(
-                            "Insufficient stock for "
-                                    + item.getProductName()
-                    );
-                }
-
-                boolean itemAdded =
-                        databaseHelper.addBillItem(
-                                billId,
-                                item.getProductId(),
-                                item.getProductName(),
-                                item.getPrice(),
-                                item.getQuantity(),
-                                item.getTotal()
-                        );
-
-                if (!itemAdded) {
-
-                    throw new Exception(
-                            "Unable to save bill item"
-                    );
-                }
-
-                boolean stockReduced =
-                        databaseHelper.reduceStock(
-                                item.getProductId(),
-                                item.getQuantity()
-                        );
-
-                if (!stockReduced) {
-
-                    throw new Exception(
-                            "Unable to update stock"
-                    );
-                }
-            }
-
-            db.setTransactionSuccessful();
-
-        } catch (Exception e) {
+        if (billId == -1) {
 
             Toast.makeText(
                     this,
-                    e.getMessage(),
+                    "Failed to save bill",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+
+        // Save every cart item
+
+        boolean success = true;
+
+        for (CartItem item : cartList) {
+
+            boolean itemSaved =
+                    databaseHelper.addBillItem(
+                            billId,
+                            item.getProductId(),
+                            item.getProductName(),
+                            item.getPrice(),
+                            item.getQuantity(),
+                            item.getTotal()
+                    );
+
+
+            if (!itemSaved) {
+                success = false;
+                break;
+            }
+
+
+            // Reduce inventory stock
+
+            boolean stockUpdated =
+                    databaseHelper.reduceStock(
+                            item.getProductId(),
+                            item.getQuantity()
+                    );
+
+
+            if (!stockUpdated) {
+                success = false;
+                break;
+            }
+        }
+
+
+        if (!success) {
+
+            Toast.makeText(
+                    this,
+                    "Bill saved but some items could not be processed",
                     Toast.LENGTH_LONG
             ).show();
 
             return;
-
-        } finally {
-
-            db.endTransaction();
         }
 
-        // ------------------------------------------------
-        // SUCCESS
-        // ------------------------------------------------
 
         Toast.makeText(
                 this,
@@ -601,10 +578,14 @@ public class NewBillActivity extends AppCompatActivity {
                 Toast.LENGTH_SHORT
         ).show();
 
-        Intent intent = new Intent(
-                NewBillActivity.this,
-                BillDetailsActivity.class
-        );
+
+        // Open bill details
+
+        Intent intent =
+                new Intent(
+                        NewBillActivity.this,
+                        BillDetailsActivity.class
+                );
 
         intent.putExtra(
                 "bill_id",
@@ -614,32 +595,5 @@ public class NewBillActivity extends AppCompatActivity {
         startActivity(intent);
 
         finish();
-    }
-
-    // ----------------------------------------------------
-    // FIND PRODUCT
-    // ----------------------------------------------------
-
-    private Product findProductById(int productId) {
-
-        for (Product product : productList) {
-
-            if (product.getId() == productId) {
-                return product;
-            }
-        }
-
-        // Reload database in case inventory changed
-        ArrayList<Product> latestProducts =
-                databaseHelper.getAllProducts();
-
-        for (Product product : latestProducts) {
-
-            if (product.getId() == productId) {
-                return product;
-            }
-        }
-
-        return null;
     }
 }

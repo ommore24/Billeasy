@@ -1,8 +1,10 @@
 package com.exp1.billeasy;
-import android.content.Intent;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -14,136 +16,123 @@ import java.util.ArrayList;
 
 public class TransactionsActivity extends AppCompatActivity {
 
-    MaterialCardView btnBack;
+    private RecyclerView recyclerTransactions;
+    private TextView tvEmpty;
+    private MaterialCardView btnBack;
 
-    RecyclerView recyclerTransactions;
-
-    DatabaseHelper databaseHelper;
-
-    ArrayList<Transaction> transactions =
-            new ArrayList<>();
-
-    TransactionAdapter adapter;
-
+    private DatabaseHelper db;
+    private ArrayList<Bill> billList;
+    private BillAdapter billAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
 
-        setContentView(
-                R.layout.activity_transactions
-        );
+        setContentView(R.layout.activity_transactions);
 
+        // Views
+        recyclerTransactions = findViewById(R.id.recyclerTransactions);
+        tvEmpty = findViewById(R.id.tvEmpty);
+        btnBack = findViewById(R.id.btnBack);
 
-        btnBack =
-                findViewById(R.id.btnBack);
+        // Back button
+        btnBack.setOnClickListener(v -> finish());
 
-        recyclerTransactions =
-                findViewById(
-                        R.id.recyclerTransactions
-                );
+        // Database
+        db = new DatabaseHelper(this);
 
-
-        databaseHelper =
-                new DatabaseHelper(this);
-
-
-        btnBack.setOnClickListener(
-                v -> finish()
-        );
-
-
+        // RecyclerView
         recyclerTransactions.setLayoutManager(
                 new LinearLayoutManager(this)
         );
 
-
-        loadTransactions();
+        loadBills();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-    private void loadTransactions() {
+        if (db != null) {
+            loadBills();
+        }
+    }
 
-        transactions.clear();
+    private void loadBills() {
 
+        billList = new ArrayList<>();
 
-        Cursor cursor =
-                databaseHelper.getAllBills();
+        Cursor cursor = db.getAllBills();
 
+        if (cursor != null) {
 
-        if (cursor.moveToFirst()) {
+            if (cursor.moveToFirst()) {
 
-            do {
+                do {
 
-                int id =
-                        cursor.getInt(
-                                cursor.getColumnIndexOrThrow(
-                                        "id"
-                                )
-                        );
+                    int id = cursor.getInt(
+                            cursor.getColumnIndexOrThrow("id")
+                    );
 
-                String customer =
-                        cursor.getString(
-                                cursor.getColumnIndexOrThrow(
-                                        "customer_name"
-                                )
-                        );
+                    String customerName = cursor.getString(
+                            cursor.getColumnIndexOrThrow("customer_name")
+                    );
 
-                double total =
-                        cursor.getDouble(
-                                cursor.getColumnIndexOrThrow(
-                                        "total"
-                                )
-                        );
+                    double subtotal = cursor.getDouble(
+                            cursor.getColumnIndexOrThrow("subtotal")
+                    );
 
-                String date =
-                        cursor.getString(
-                                cursor.getColumnIndexOrThrow(
-                                        "date"
-                                )
-                        );
+                    double discount = cursor.getDouble(
+                            cursor.getColumnIndexOrThrow("discount")
+                    );
 
+                    double gst = cursor.getDouble(
+                            cursor.getColumnIndexOrThrow("gst")
+                    );
 
-                transactions.add(
-                        new Transaction(
-                                id,
-                                customer,
-                                total,
-                                date
-                        )
-                );
+                    double total = cursor.getDouble(
+                            cursor.getColumnIndexOrThrow("total")
+                    );
 
-            } while (cursor.moveToNext());
+                    String date = cursor.getString(
+                            cursor.getColumnIndexOrThrow("date")
+                    );
+
+                    billList.add(
+                            new Bill(
+                                    id,
+                                    customerName,
+                                    subtotal,
+                                    discount,
+                                    gst,
+                                    total,
+                                    date
+                            )
+                    );
+
+                } while (cursor.moveToNext());
+            }
+
+            cursor.close();
         }
 
+        // Empty state
+        if (billList.isEmpty()) {
 
-        cursor.close();
+            recyclerTransactions.setVisibility(View.GONE);
+            tvEmpty.setVisibility(View.VISIBLE);
 
+        } else {
 
-        adapter =
-                new TransactionAdapter(
-                        transactions,
-                        transaction -> {
+            recyclerTransactions.setVisibility(View.VISIBLE);
+            tvEmpty.setVisibility(View.GONE);
 
-                            Intent intent = new Intent(
-                                    TransactionsActivity.this,
-                                    BillDetailsActivity.class
-                            );
+            billAdapter = new BillAdapter(
+                    this,
+                    billList
+            );
 
-                            intent.putExtra(
-                                    "bill_id",
-                                    transaction.getId()
-                            );
-
-                            startActivity(intent);
-
-                        }
-                );
-
-
-        recyclerTransactions.setAdapter(
-                adapter
-        );
+            recyclerTransactions.setAdapter(billAdapter);
+        }
     }
 }

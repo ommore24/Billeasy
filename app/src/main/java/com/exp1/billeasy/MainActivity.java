@@ -1,8 +1,7 @@
 package com.exp1.billeasy;
-import android.content.Intent;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -21,9 +20,15 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        // Find views
         cardInventory = findViewById(R.id.cardInventory);
         cardBilling = findViewById(R.id.cardBilling);
         bottomNavigation = findViewById(R.id.bottomNavigation);
+
+
+        // =========================
+        // NEW BILL CARD
+        // =========================
 
         cardBilling.setOnClickListener(v -> {
 
@@ -35,7 +40,11 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Inventory button
+
+        // =========================
+        // INVENTORY CARD
+        // =========================
+
         cardInventory.setOnClickListener(v -> {
 
             Intent intent = new Intent(
@@ -44,50 +53,61 @@ public class MainActivity extends AppCompatActivity {
             );
 
             startActivity(intent);
-
         });
 
 
+        // =========================
+        // BOTTOM NAVIGATION
+        // =========================
 
-        // Bottom navigation
         bottomNavigation.setOnItemSelectedListener(item -> {
 
             int id = item.getItemId();
 
+
+            // HOME
             if (id == R.id.nav_home) {
 
+                // Already on Home
                 return true;
+            }
 
-            } else if (id == R.id.nav_inventory) {
 
-                Toast.makeText(
+            // INVENTORY
+            else if (id == R.id.nav_inventory) {
+
+                Intent intent = new Intent(
                         MainActivity.this,
-                        "Inventory",
-                        Toast.LENGTH_SHORT
-                ).show();
+                        InventoryActivity.class
+                );
 
-                return true;
-
-            } else if (id == R.id.nav_bills) {
-
-                Toast.makeText(
-                        MainActivity.this,
-                        "Bills",
-                        Toast.LENGTH_SHORT
-                ).show();
-
-                return true;
-
-            } else if (id == R.id.nav_profile) {
-
-                Toast.makeText(
-                        MainActivity.this,
-                        "Profile",
-                        Toast.LENGTH_SHORT
-                ).show();
+                startActivity(intent);
 
                 return true;
             }
+
+
+            // BILLS / TRANSACTIONS
+            else if (id == R.id.nav_bills) {
+
+                Intent intent = new Intent(
+                        MainActivity.this,
+                        TransactionsActivity.class
+                );
+
+                startActivity(intent);
+
+                return true;
+            }
+
+
+            // PROFILE
+            else if (id == R.id.nav_profile) {
+
+                // Profile module can be added later
+                return true;
+            }
+
 
             return false;
         });
