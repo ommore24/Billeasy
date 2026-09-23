@@ -1,4 +1,4 @@
-package com.exp1.billeasy;
+package com.exp1.billeasy.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,6 +9,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.exp1.billeasy.R;
+import com.exp1.billeasy.models.Product;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;

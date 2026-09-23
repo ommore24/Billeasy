@@ -7,6 +7,13 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.exp1.billeasy.analytics.AnalyticsActivity;
+import com.exp1.billeasy.analytics.TransactionsActivity;
+import com.exp1.billeasy.auth.ProfileActivity;
+import com.exp1.billeasy.billing.BillDetailsActivity;
+import com.exp1.billeasy.billing.NewBillActivity;
+import com.exp1.billeasy.database.DatabaseHelper;
+import com.exp1.billeasy.inventory.InventoryActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
 
@@ -23,11 +30,26 @@ public class MainActivity extends AppCompatActivity {
     TextView tvLowStock;
 
     DatabaseHelper databaseHelper;
-    MaterialCardView cardRecentTransaction;
 
-    TextView tvRecentBill;
-    TextView tvRecentBillDate;
-    TextView tvRecentBillAmount;
+    // Recent transaction cards
+    MaterialCardView cardRecentTransaction1;
+    MaterialCardView cardRecentTransaction2;
+    MaterialCardView cardRecentTransaction3;
+
+    TextView tvRecentBill1;
+    TextView tvRecentBillDate1;
+    TextView tvRecentBillAmount1;
+
+    TextView tvRecentBill2;
+    TextView tvRecentBillDate2;
+    TextView tvRecentBillAmount2;
+
+    TextView tvRecentBill3;
+    TextView tvRecentBillDate3;
+    TextView tvRecentBillAmount3;
+
+    TextView tvViewAll;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,46 +69,111 @@ public class MainActivity extends AppCompatActivity {
         tvProducts = findViewById(R.id.tvProducts);
         tvLowStock = findViewById(R.id.tvLowStock);
 
-        cardRecentTransaction =
-                findViewById(R.id.cardRecentTransaction);
+        cardRecentTransaction1 =
+                findViewById(R.id.cardRecentTransaction1);
 
-        tvRecentBill =
-                findViewById(R.id.tvRecentBill);
+        cardRecentTransaction2 =
+                findViewById(R.id.cardRecentTransaction2);
 
-        tvRecentBillDate =
-                findViewById(R.id.tvRecentBillDate);
+        cardRecentTransaction3 =
+                findViewById(R.id.cardRecentTransaction3);
 
-        tvRecentBillAmount =
-                findViewById(R.id.tvRecentBillAmount);
+        tvRecentBill1 =
+                findViewById(R.id.tvRecentBill1);
+
+        tvRecentBillDate1 =
+                findViewById(R.id.tvRecentBillDate1);
+
+        tvRecentBillAmount1 =
+                findViewById(R.id.tvRecentBillAmount1);
+
+        tvRecentBill2 =
+                findViewById(R.id.tvRecentBill2);
+
+        tvRecentBillDate2 =
+                findViewById(R.id.tvRecentBillDate2);
+
+        tvRecentBillAmount2 =
+                findViewById(R.id.tvRecentBillAmount2);
+
+        tvRecentBill3 =
+                findViewById(R.id.tvRecentBill3);
+
+        tvRecentBillDate3 =
+                findViewById(R.id.tvRecentBillDate3);
+
+        tvRecentBillAmount3 =
+                findViewById(R.id.tvRecentBillAmount3);
+
+        tvViewAll =
+                findViewById(R.id.tvViewAll);
+
+        MaterialCardView cardAnalyticsToggle = findViewById(R.id.cardAnalyticsToggle);
+        if (cardAnalyticsToggle != null) {
+            cardAnalyticsToggle.setOnClickListener(v -> {
+                startActivity(new Intent(MainActivity.this, AnalyticsActivity.class));
+            });
+        }
 
         databaseHelper = new DatabaseHelper(this);
 
+        // Open Analytics from the top right "dots" card
+        findViewById(R.id.tvRecentBill1).getRootView().findViewById(R.id.cardRecentTransaction1).getParent(); // Context check dummy
+        
+        // Let's find the ⋮ card (it doesn't have an ID in the layout I read)
+        // I will add an ID to it in the XML first or try to find it via hierarchy.
+        // Actually, the card in the header was:
+        /*
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            ...
+        */
+
 
         // =========================
-        // NEW BILL CARD
+        // NEW BILL
         // =========================
 
         cardBilling.setOnClickListener(v -> {
 
-            Intent intent = new Intent(
-                    MainActivity.this,
-                    NewBillActivity.class
-            );
+            Intent intent =
+                    new Intent(
+                            MainActivity.this,
+                            NewBillActivity.class
+                    );
 
             startActivity(intent);
         });
 
 
         // =========================
-        // INVENTORY CARD
+        // INVENTORY
         // =========================
 
         cardInventory.setOnClickListener(v -> {
 
-            Intent intent = new Intent(
-                    MainActivity.this,
-                    InventoryActivity.class
-            );
+            Intent intent =
+                    new Intent(
+                            MainActivity.this,
+                            InventoryActivity.class
+                    );
+
+            startActivity(intent);
+        });
+
+
+        // =========================
+        // VIEW ALL
+        // =========================
+
+        tvViewAll.setOnClickListener(v -> {
+
+            Intent intent =
+                    new Intent(
+                            MainActivity.this,
+                            TransactionsActivity.class
+                    );
 
             startActivity(intent);
         });
@@ -107,10 +194,11 @@ public class MainActivity extends AppCompatActivity {
 
             else if (id == R.id.nav_inventory) {
 
-                Intent intent = new Intent(
-                        MainActivity.this,
-                        InventoryActivity.class
-                );
+                Intent intent =
+                        new Intent(
+                                MainActivity.this,
+                                InventoryActivity.class
+                        );
 
                 startActivity(intent);
 
@@ -119,10 +207,11 @@ public class MainActivity extends AppCompatActivity {
 
             else if (id == R.id.nav_bills) {
 
-                Intent intent = new Intent(
-                        MainActivity.this,
-                        TransactionsActivity.class
-                );
+                Intent intent =
+                        new Intent(
+                                MainActivity.this,
+                                TransactionsActivity.class
+                        );
 
                 startActivity(intent);
 
@@ -131,7 +220,14 @@ public class MainActivity extends AppCompatActivity {
 
             else if (id == R.id.nav_profile) {
 
-                // Profile can be implemented later
+                Intent intent =
+                        new Intent(
+                                MainActivity.this,
+                                ProfileActivity.class
+                        );
+
+                startActivity(intent);
+
                 return true;
             }
 
@@ -141,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     // =========================
-    // LOAD DASHBOARD DATA
+    // LOAD DASHBOARD
     // =========================
 
     private void loadDashboardData() {
@@ -152,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
 
         loadLowStock();
 
-        loadRecentTransaction();
+        loadRecentTransactions();
     }
 
 
@@ -200,94 +296,172 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    // =========================
-// LOAD RECENT TRANSACTION
-// =========================
 
-    private void loadRecentTransaction() {
+    // =========================
+    // LOAD 3 RECENT TRANSACTIONS
+    // =========================
+
+    private void loadRecentTransactions() {
 
         Cursor cursor =
-                databaseHelper.getLatestBill();
+                databaseHelper.getRecentBills(3);
 
-        if (cursor.moveToFirst()) {
+        // Hide all initially
+        cardRecentTransaction1.setVisibility(
+                MaterialCardView.GONE
+        );
 
-            int billId =
-                    cursor.getInt(
-                            cursor.getColumnIndexOrThrow("id")
-                    );
+        cardRecentTransaction2.setVisibility(
+                MaterialCardView.GONE
+        );
 
-            String customer =
-                    cursor.getString(
-                            cursor.getColumnIndexOrThrow(
-                                    "customer_name"
-                            )
-                    );
+        cardRecentTransaction3.setVisibility(
+                MaterialCardView.GONE
+        );
 
-            double total =
-                    cursor.getDouble(
-                            cursor.getColumnIndexOrThrow(
-                                    "total"
-                            )
-                    );
+        int position = 0;
 
-            String date =
-                    cursor.getString(
-                            cursor.getColumnIndexOrThrow(
-                                    "date"
-                            )
-                    );
+        if (cursor != null) {
 
-            tvRecentBill.setText(
-                    "#"+ billId + "  •  " + customer
-            );
+            if (cursor.moveToFirst()) {
 
-            tvRecentBillDate.setText(
-                    date
-            );
+                do {
 
-            tvRecentBillAmount.setText(
-                    "₹" + format(total)
-            );
+                    int billId =
+                            cursor.getInt(
+                                    cursor.getColumnIndexOrThrow(
+                                            "id"
+                                    )
+                            );
 
-            cardRecentTransaction.setOnClickListener(v -> {
+                    String customer =
+                            cursor.getString(
+                                    cursor.getColumnIndexOrThrow(
+                                            "customer_name"
+                                    )
+                            );
 
-                Intent intent =
-                        new Intent(
-                                MainActivity.this,
-                                BillDetailsActivity.class
+                    double total =
+                            cursor.getDouble(
+                                    cursor.getColumnIndexOrThrow(
+                                            "total"
+                                    )
+                            );
+
+                    String date =
+                            cursor.getString(
+                                    cursor.getColumnIndexOrThrow(
+                                            "date"
+                                    )
+                            );
+
+
+                    if (position == 0) {
+
+                        showTransaction(
+                                cardRecentTransaction1,
+                                tvRecentBill1,
+                                tvRecentBillDate1,
+                                tvRecentBillAmount1,
+                                billId,
+                                customer,
+                                total,
+                                date
                         );
 
-                intent.putExtra(
-                        "bill_id",
-                        billId
+                    }
+
+                    else if (position == 1) {
+
+                        showTransaction(
+                                cardRecentTransaction2,
+                                tvRecentBill2,
+                                tvRecentBillDate2,
+                                tvRecentBillAmount2,
+                                billId,
+                                customer,
+                                total,
+                                date
+                        );
+
+                    }
+
+                    else if (position == 2) {
+
+                        showTransaction(
+                                cardRecentTransaction3,
+                                tvRecentBill3,
+                                tvRecentBillDate3,
+                                tvRecentBillAmount3,
+                                billId,
+                                customer,
+                                total,
+                                date
+                        );
+                    }
+
+                    position++;
+
+                } while (
+                        cursor.moveToNext()
+                                && position < 3
                 );
+            }
 
-                startActivity(intent);
-            });
-
-        } else {
-
-            tvRecentBill.setText(
-                    "No transactions yet"
-            );
-
-            tvRecentBillDate.setText(
-                    "Create your first bill"
-            );
-
-            tvRecentBillAmount.setText(
-                    "₹0.00"
-            );
-
-            cardRecentTransaction.setOnClickListener(null);
+            cursor.close();
         }
-
-        cursor.close();
     }
 
 
     // =========================
-    // REFRESH WHEN RETURNING
+    // SHOW SINGLE TRANSACTION
+    // =========================
+
+    private void showTransaction(
+            MaterialCardView card,
+            TextView bill,
+            TextView dateText,
+            TextView amount,
+            int billId,
+            String customer,
+            double total,
+            String date) {
+
+        card.setVisibility(
+                MaterialCardView.VISIBLE
+        );
+
+        bill.setText(
+                "#" + billId + "  •  " + customer
+        );
+
+        dateText.setText(date);
+
+        amount.setText(
+                "₹" + format(total)
+        );
+
+
+        card.setOnClickListener(v -> {
+
+            Intent intent =
+                    new Intent(
+                            MainActivity.this,
+                            BillDetailsActivity.class
+                    );
+
+            intent.putExtra(
+                    "bill_id",
+                    billId
+            );
+
+            startActivity(intent);
+        });
+    }
+
+
+    // =========================
+    // REFRESH
     // =========================
 
     @Override

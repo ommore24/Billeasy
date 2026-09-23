@@ -1,4 +1,4 @@
-package com.exp1.billeasy;
+package com.exp1.billeasy.models;
 
 public class Bill {
 

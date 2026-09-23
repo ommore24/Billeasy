@@ -74,6 +74,23 @@
                 android:orientation="vertical"
                 android:padding="22dp">
 
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardProductImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:id="@+id/ivProductImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop" />
+
+                </com.google.android.material.card.MaterialCardView>
+
                 <TextView
                     android:id="@+id/tvProductName"
                     android:layout_width="wrap_content"
@@ -167,6 +184,22 @@
             android:textStyle="bold"
             app:backgroundTint="#202B52"
             app:cornerRadius="17dp" />
+
+
+        <!-- Add Stock -->
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAddStock"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="10dp"
+            android:text="ADD STOCK / BATCH"
+            android:textColor="#202B52"
+            android:textStyle="bold"
+            app:backgroundTint="#E7E9EF"
+            app:cornerRadius="17dp"
+            app:strokeColor="#202B52"
+            app:strokeWidth="1dp" />
 
 
         <!-- Delete -->

@@ -1,6 +1,4 @@
-package com.exp1.billeasy;
-
-
+package com.exp1.billeasy.models;
 
 public class Product {
 
@@ -10,9 +8,10 @@ public class Product {
     private double price;
     private int quantity;
     private String supplier;
+    private String imagePath;
 
     public Product(int id, String name, String category,
-                   double price, int quantity, String supplier) {
+                   double price, int quantity, String supplier, String imagePath) {
 
         this.id = id;
         this.name = name;
@@ -20,6 +19,7 @@ public class Product {
         this.price = price;
         this.quantity = quantity;
         this.supplier = supplier;
+        this.imagePath = imagePath;
     }
 
     public int getId() {
@@ -44,5 +44,9 @@ public class Product {
 
     public String getSupplier() {
         return supplier;
+    }
+
+    public String getImagePath() {
+        return imagePath;
     }
 }

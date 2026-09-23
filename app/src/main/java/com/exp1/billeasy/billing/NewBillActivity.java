@@ -1,4 +1,4 @@
-package com.exp1.billeasy;
+package com.exp1.billeasy.billing;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +8,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.exp1.billeasy.R;
+import com.exp1.billeasy.adapters.CartAdapter;
+import com.exp1.billeasy.adapters.ProductBillingAdapter;
+import com.exp1.billeasy.database.DatabaseHelper;
+import com.exp1.billeasy.models.CartItem;
+import com.exp1.billeasy.models.Product;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 

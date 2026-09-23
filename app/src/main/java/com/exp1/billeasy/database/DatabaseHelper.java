@@ -1,4 +1,4 @@
-package com.exp1.billeasy;
+package com.exp1.billeasy.database;
 
 
 import android.content.ContentValues;
@@ -7,6 +7,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.exp1.billeasy.models.Product;
+
 import java.util.ArrayList;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -14,11 +16,21 @@ import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "Billeasy.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final String DATABASE_PREFIX = "Billeasy_";
+    private static final int DATABASE_VERSION = 5;
+    private final Context context;
+
+    // A helper method to determine the correct database name for the current session
+    private static String getDynamicDatabaseName(Context context) {
+        android.content.SharedPreferences prefs = context.getSharedPreferences("BillEasyPrefs", Context.MODE_PRIVATE);
+        // Default to 'global' for login/register when no user is logged in yet
+        String user = prefs.getString("logged_in_user", "global");
+        return DATABASE_PREFIX + user + ".db";
+    }
 
     public DatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        super(context, getDynamicDatabaseName(context), null, DATABASE_VERSION);
+        this.context = context;
     }
 
     @Override
@@ -31,7 +43,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         "category TEXT, " +
                         "price REAL NOT NULL, " +
                         "quantity INTEGER NOT NULL, " +
-                        "supplier TEXT" +
+                        "supplier TEXT, " +
+                        "image_path TEXT" +
                         ")";
 
         db.execSQL(createProductsTable);
@@ -56,6 +69,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         "quantity INTEGER, " +
                         "total REAL)"
         );
+
+        db.execSQL(
+                "CREATE TABLE StoreProfile (" +
+                        "id INTEGER PRIMARY KEY, " +
+                        "store_name TEXT, " +
+                        "owner_name TEXT, " +
+                        "phone TEXT, " +
+                        "address TEXT, " +
+                        "gst_number TEXT)"
+        );
+
+        // Insert initial empty profile for this specific user's database
+        db.execSQL("INSERT INTO StoreProfile (id, store_name) VALUES (1, 'BillEasy Store')");
     }
 
 
@@ -64,41 +90,62 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             SQLiteDatabase db,
             int oldVersion,
             int newVersion) {
-
-        if (oldVersion < 2) {
-
-            db.execSQL(
-                    "CREATE TABLE Bills (" +
-                            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                            "customer_name TEXT, " +
-                            "subtotal REAL, " +
-                            "discount REAL, " +
-                            "gst REAL, " +
-                            "total REAL, " +
-                            "date TEXT)"
-            );
-
-            db.execSQL(
-                    "CREATE TABLE BillItems (" +
-                            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                            "bill_id INTEGER, " +
-                            "product_id INTEGER, " +
-                            "product_name TEXT, " +
-                            "price REAL, " +
-                            "quantity INTEGER, " +
-                            "total REAL)"
-            );
-        }
+        // Upgrade logic for user-specific database
     }
 
 
-    // ADD PRODUCT
+    // =========================================================================
+    // AUTHENTICATION METHODS (Uses a shared Global Auth Database)
+    // =========================================================================
+
+    private SQLiteDatabase getAuthDatabase(boolean writable) {
+        // We open a central specific file for Users so all sessions share the same accounts
+        SQLiteDatabase authDb = context.openOrCreateDatabase("Billeasy_Auth.db", Context.MODE_PRIVATE, null);
+        
+        // Ensure Users table exists in the global auth file
+        authDb.execSQL("CREATE TABLE IF NOT EXISTS Users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)");
+        
+        // Ensure default admin exists
+        authDb.execSQL("INSERT OR IGNORE INTO Users (username, password) VALUES ('admin', 'admin123')");
+        
+        return authDb;
+    }
+
+    public boolean checkUser(String username, String password) {
+        SQLiteDatabase db = getAuthDatabase(false);
+        Cursor cursor = db.rawQuery(
+                "SELECT * FROM Users WHERE username=? AND password=?",
+                new String[]{username, password}
+        );
+
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        db.close();
+        return exists;
+    }
+
+    public boolean registerUser(String username, String password) {
+        SQLiteDatabase db = getAuthDatabase(true);
+        ContentValues values = new ContentValues();
+        values.put("username", username);
+        values.put("password", password);
+
+        long result = db.insert("Users", null, values);
+        db.close();
+        return result != -1;
+    }
+
+
+    // =========================================================================
+    // INVENTORY METHODS (Automatically uses the logged-in user's database)
+    // =========================================================================
 
     public boolean addProduct(String name,
                               String category,
                               double price,
                               int quantity,
-                              String supplier) {
+                              String supplier,
+                              String imagePath) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -109,6 +156,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("price", price);
         values.put("quantity", quantity);
         values.put("supplier", supplier);
+        values.put("image_path", imagePath);
 
         long result = db.insert("Products", null, values);
 
@@ -117,8 +165,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
-
-    // GET ALL PRODUCTS
 
     public ArrayList<Product> getAllProducts() {
 
@@ -159,6 +205,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         cursor.getColumnIndexOrThrow("supplier")
                 );
 
+                String imagePath = cursor.getString(
+                        cursor.getColumnIndexOrThrow("image_path")
+                );
+
                 productList.add(
                         new Product(
                                 id,
@@ -166,7 +216,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                                 category,
                                 price,
                                 quantity,
-                                supplier
+                                supplier,
+                                imagePath
                         )
                 );
 
@@ -178,13 +229,75 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return productList;
     }
+
+
+    public Product getProduct(int productId) {
+
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery(
+                "SELECT * FROM Products WHERE id=?",
+                new String[]{String.valueOf(productId)}
+        );
+
+        Product product = null;
+
+        if (cursor.moveToFirst()) {
+
+            int id = cursor.getInt(
+                    cursor.getColumnIndexOrThrow("id")
+            );
+
+            String name = cursor.getString(
+                    cursor.getColumnIndexOrThrow("name")
+            );
+
+            String category = cursor.getString(
+                    cursor.getColumnIndexOrThrow("category")
+            );
+
+            double price = cursor.getDouble(
+                    cursor.getColumnIndexOrThrow("price")
+            );
+
+            int quantity = cursor.getInt(
+                    cursor.getColumnIndexOrThrow("quantity")
+            );
+
+            String supplier = cursor.getString(
+                    cursor.getColumnIndexOrThrow("supplier")
+            );
+
+            String imagePath = cursor.getString(
+                    cursor.getColumnIndexOrThrow("image_path")
+            );
+
+            product = new Product(
+                    id,
+                    name,
+                    category,
+                    price,
+                    quantity,
+                    supplier,
+                    imagePath
+            );
+        }
+
+        cursor.close();
+        db.close();
+
+        return product;
+    }
+
+
     public boolean updateProduct(
             int id,
             String name,
             String category,
             double price,
             int quantity,
-            String supplier) {
+            String supplier,
+            String imagePath) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -195,6 +308,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("price", price);
         values.put("quantity", quantity);
         values.put("supplier", supplier);
+        values.put("image_path", imagePath);
 
         int result = db.update(
                 "Products",
@@ -223,6 +337,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return result > 0;
     }
+
+
+    public boolean addStock(int productId, int addedQuantity) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery(
+                "SELECT quantity FROM Products WHERE id=?",
+                new String[]{String.valueOf(productId)}
+        );
+
+        if (!cursor.moveToFirst()) {
+            cursor.close();
+            db.close();
+            return false;
+        }
+
+        int currentStock = cursor.getInt(0);
+        cursor.close();
+
+        ContentValues values = new ContentValues();
+        values.put("quantity", currentStock + addedQuantity);
+
+        int result = db.update(
+                "Products",
+                values,
+                "id=?",
+                new String[]{String.valueOf(productId)}
+        );
+
+        db.close();
+
+        return result > 0;
+    }
+
+
+    // =========================================================================
+    // BILLING METHODS
+    // =========================================================================
+
     public long createBill(
             String customerName,
             double subtotal,
@@ -244,6 +398,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return db.insert("Bills", null, values);
     }
+
     public boolean addBillItem(
             long billId,
             int productId,
@@ -271,6 +426,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return result != -1;
     }
+
     public boolean reduceStock(
             int productId,
             int quantity) {
@@ -330,7 +486,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return result > 0;
     }
-    // GET ALL BILLS
 
     public Cursor getAllBills() {
 
@@ -342,8 +497,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         );
     }
 
+    public Cursor getRecentBills(int limit) {
 
-// GET SINGLE BILL
+        SQLiteDatabase db =
+                this.getReadableDatabase();
+
+        return db.rawQuery(
+                "SELECT * FROM Bills " +
+                        "ORDER BY id DESC LIMIT ?",
+                new String[]{
+                        String.valueOf(limit)
+                }
+        );
+    }
+
+    public boolean deleteBill(int billId) {
+
+        SQLiteDatabase db =
+                this.getWritableDatabase();
+
+        // Delete bill items first
+        db.delete(
+                "BillItems",
+                "bill_id=?",
+                new String[]{
+                        String.valueOf(billId)
+                }
+        );
+
+        // Delete bill
+        int result =
+                db.delete(
+                        "Bills",
+                        "id=?",
+                        new String[]{
+                                String.valueOf(billId)
+                        }
+                );
+
+        return result > 0;
+    }
 
     public Cursor getBill(int billId) {
 
@@ -357,9 +550,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         );
     }
 
-
-// GET BILL ITEMS
-
     public Cursor getBillItems(int billId) {
 
         SQLiteDatabase db = this.getReadableDatabase();
@@ -372,9 +562,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         );
     }
 
-    // =========================
-// GET TOTAL PRODUCT COUNT
-// =========================
+
+    // =========================================================================
+    // ANALYTICS & DASHBOARD METHODS
+    // =========================================================================
 
     public int getProductCount() {
 
@@ -397,11 +588,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return count;
     }
 
-
-// =========================
-// GET LOW STOCK COUNT
-// =========================
-
     public int getLowStockCount() {
 
         SQLiteDatabase db =
@@ -423,11 +609,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return count;
     }
 
-
-// =========================
-// GET TODAY'S REVENUE
-// =========================
-
     public double getTodayRevenue() {
 
         SQLiteDatabase db =
@@ -439,12 +620,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "SELECT total, date FROM Bills",
                 null
         );
-
-        SimpleDateFormat dateFormat =
-                new SimpleDateFormat(
-                        "dd MMM yyyy, hh:mm a",
-                        Locale.getDefault()
-                );
 
         String today =
                 new SimpleDateFormat(
@@ -480,19 +655,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return revenue;
     }
 
-    // =========================
-// GET LATEST BILL
-// =========================
 
-    public Cursor getLatestBill() {
+    // =========================================================================
+    // PROFILE METHODS
+    // =========================================================================
 
-        SQLiteDatabase db =
-                this.getReadableDatabase();
+    public boolean updateProfile(String storeName, String ownerName, String phone, String address, String gst) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("store_name", storeName);
+        values.put("owner_name", ownerName);
+        values.put("phone", phone);
+        values.put("address", address);
+        values.put("gst_number", gst);
 
-        return db.rawQuery(
-                "SELECT * FROM Bills ORDER BY id DESC LIMIT 1",
-                null
-        );
+        int result = db.update("StoreProfile", values, "id=1", null);
+        db.close();
+        return result > 0;
     }
 
+    public Cursor getStoreProfile() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM StoreProfile WHERE id=1", null);
+    }
 }

@@ -1,4 +1,4 @@
-package com.exp1.billeasy;
+package com.exp1.billeasy.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +7,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.exp1.billeasy.R;
+import com.exp1.billeasy.models.BillItem;
 
 import java.util.ArrayList;
 import java.util.Locale;

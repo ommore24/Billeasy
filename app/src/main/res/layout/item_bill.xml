@@ -112,6 +112,32 @@
 
         </LinearLayout>
 
+
+        <!-- DELETE BUTTON -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/btnDelete"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginStart="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="#FFF1F1"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:rippleColor="#FFDADA">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="×"
+                android:textColor="#C94B4B"
+                android:textSize="23sp"
+                android:textStyle="bold" />
+
+        </com.google.android.material.card.MaterialCardView>
+
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

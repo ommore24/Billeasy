@@ -122,6 +122,71 @@
     </com.google.android.material.card.MaterialCardView>
 
 
+    <!-- Filters -->
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="10dp"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupFilters"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipAll"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:checkable="true"
+                android:clickable="true"
+                android:focusable="true"
+                android:text="All Products"
+                android:textColor="@color/chip_text_state_list"
+                app:chipBackgroundColor="@color/chip_bg_state_list"
+                app:chipStrokeColor="#E5E7ED"
+                app:chipStrokeWidth="1dp" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipLowStock"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:clickable="true"
+                android:focusable="true"
+                android:text="Low Stock"
+                android:textColor="@color/chip_text_state_list"
+                app:chipBackgroundColor="@color/chip_bg_state_list"
+                app:chipStrokeColor="#E5E7ED"
+                app:chipStrokeWidth="1dp" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipOutOfStock"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:clickable="true"
+                android:focusable="true"
+                android:text="Out of Stock"
+                android:textColor="@color/chip_text_state_list"
+                app:chipBackgroundColor="@color/chip_bg_state_list"
+                app:chipStrokeColor="#E5E7ED"
+                app:chipStrokeWidth="1dp" />
+
+        </com.google.android.material.chip.ChipGroup>
+
+    </HorizontalScrollView>
+
+
     <!-- Stock summary -->
 
     <LinearLayout

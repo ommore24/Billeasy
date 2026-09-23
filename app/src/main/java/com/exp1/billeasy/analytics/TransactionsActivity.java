@@ -1,15 +1,21 @@
-package com.exp1.billeasy;
+package com.exp1.billeasy.analytics;
 
-import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.exp1.billeasy.R;
+import com.exp1.billeasy.adapters.BillAdapter;
+import com.exp1.billeasy.database.DatabaseHelper;
+import com.exp1.billeasy.models.Bill;
 import com.google.android.material.card.MaterialCardView;
 
 import java.util.ArrayList;
@@ -19,6 +25,7 @@ public class TransactionsActivity extends AppCompatActivity {
     private RecyclerView recyclerTransactions;
     private TextView tvEmpty;
     private MaterialCardView btnBack;
+    private EditText etSearch;
 
     private DatabaseHelper db;
     private ArrayList<Bill> billList;
@@ -34,6 +41,7 @@ public class TransactionsActivity extends AppCompatActivity {
         recyclerTransactions = findViewById(R.id.recyclerTransactions);
         tvEmpty = findViewById(R.id.tvEmpty);
         btnBack = findViewById(R.id.btnBack);
+        etSearch = findViewById(R.id.etSearch);
 
         // Back button
         btnBack.setOnClickListener(v -> finish());
@@ -47,6 +55,20 @@ public class TransactionsActivity extends AppCompatActivity {
         );
 
         loadBills();
+
+        // Search logic
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filter(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
     }
 
     @Override
@@ -117,21 +139,34 @@ public class TransactionsActivity extends AppCompatActivity {
         }
 
         // Empty state
-        if (billList.isEmpty()) {
+        updateUI();
+    }
 
+    private void filter(String text) {
+        ArrayList<Bill> filteredList = new ArrayList<>();
+        for (Bill item : billList) {
+            // Search by Customer Name or Bill ID
+            String customerName = item.getCustomerName() != null ? item.getCustomerName().toLowerCase() : "walk-in customer";
+            String billId = String.valueOf(item.getId());
+
+            if (customerName.contains(text.toLowerCase()) || billId.contains(text)) {
+                filteredList.add(item);
+            }
+        }
+        if (billAdapter != null) {
+            billAdapter.updateList(filteredList);
+        }
+    }
+
+    private void updateUI() {
+        if (billList.isEmpty()) {
             recyclerTransactions.setVisibility(View.GONE);
             tvEmpty.setVisibility(View.VISIBLE);
-
         } else {
-
             recyclerTransactions.setVisibility(View.VISIBLE);
             tvEmpty.setVisibility(View.GONE);
 
-            billAdapter = new BillAdapter(
-                    this,
-                    billList
-            );
-
+            billAdapter = new BillAdapter(this, billList);
             recyclerTransactions.setAdapter(billAdapter);
         }
     }

@@ -54,8 +54,11 @@
                 </LinearLayout>
 
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardAnalyticsToggle"
                     android:layout_width="46dp"
                     android:layout_height="46dp"
+                    android:clickable="true"
+                    android:focusable="true"
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="23dp"
                     app:cardElevation="0dp"
@@ -356,19 +359,43 @@
 
             <!-- ================= RECENT TRANSACTIONS ================= -->
 
-            <!-- Recent Transactions -->
+            <!-- ================= RECENT TRANSACTIONS ================= -->
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="28dp"
-                android:text="Recent transactions"
-                android:textColor="#171A24"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Recent transactions"
+                    android:textColor="#171A24"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvViewAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="6dp"
+                    android:text="View all"
+                    android:textColor="#202B52"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+
+            <!-- ================= RECENT BILL 1 ================= -->
 
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardRecentTransaction"
+                android:id="@+id/cardRecentTransaction1"
                 android:layout_width="match_parent"
                 android:layout_height="85dp"
                 android:layout_marginTop="13dp"
@@ -402,30 +429,164 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:id="@+id/tvRecentBill"
+                            android:id="@+id/tvRecentBill1"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="No transactions yet"
                             android:textColor="#272A34"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
                         <TextView
-                            android:id="@+id/tvRecentBillDate"
+                            android:id="@+id/tvRecentBillDate1"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="Create your first bill"
                             android:textColor="#737887"
                             android:textSize="12sp" />
 
                     </LinearLayout>
 
                     <TextView
-                        android:id="@+id/tvRecentBillAmount"
+                        android:id="@+id/tvRecentBillAmount1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="₹0.00"
+                        android:textColor="#171A24"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+
+            <!-- ================= RECENT BILL 2 ================= -->
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardRecentTransaction2"
+                android:layout_width="match_parent"
+                android:layout_height="85dp"
+                android:layout_marginTop="10dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:background="@drawable/bg_circle"
+                        android:gravity="center"
+                        android:text="₹"
+                        android:textColor="#202B52"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="13dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvRecentBill2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#272A34"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvRecentBillDate2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textColor="#737887"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvRecentBillAmount2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#171A24"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+
+            <!-- ================= RECENT BILL 3 ================= -->
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardRecentTransaction3"
+                android:layout_width="match_parent"
+                android:layout_height="85dp"
+                android:layout_marginTop="10dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:background="@drawable/bg_circle"
+                        android:gravity="center"
+                        android:text="₹"
+                        android:textColor="#202B52"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="13dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvRecentBill3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#272A34"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvRecentBillDate3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textColor="#737887"
+                            android:textSize="12sp"
+                            />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvRecentBillAmount3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:textColor="#171A24"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -445,11 +606,18 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="76dp"
         android:background="#FFFFFF"
+        android:elevation="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        app:itemIconSize="24dp"
         app:itemIconTint="@color/nav_item_color"
         app:itemTextColor="@color/nav_item_color"
+        app:itemVerticalPadding="4dp"
         app:labelVisibilityMode="labeled"
+        app:itemRippleColor="#E9EBF2"
         app:menu="@menu/bottom_nav_menu" />
+
 
 </LinearLayout>

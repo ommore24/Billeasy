@@ -1,14 +1,20 @@
-package com.exp1.billeasy;
+package com.exp1.billeasy.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.exp1.billeasy.inventory.ProductDetailsActivity;
+import com.exp1.billeasy.R;
+import com.exp1.billeasy.models.Product;
 
 import java.util.ArrayList;
 
@@ -83,6 +89,14 @@ public class ProductAdapter
                 String.valueOf(product.getQuantity())
         );
 
+        if (product.getImagePath() != null && !product.getImagePath().isEmpty()) {
+            holder.ivProduct.setImageURI(Uri.parse(product.getImagePath()));
+            holder.ivProduct.setPadding(0, 0, 0, 0);
+        } else {
+            holder.ivProduct.setImageResource(android.R.drawable.ic_menu_gallery);
+            holder.ivProduct.setPadding(15, 15, 15, 15);
+        }
+
         holder.itemView.setOnClickListener(v -> {
 
             // Billing mode
@@ -130,6 +144,8 @@ public class ProductAdapter
                             ? ""
                             : product.getSupplier()
             );
+            
+            intent.putExtra("product_image", product.getImagePath());
 
             context.startActivity(intent);
         });
@@ -140,6 +156,12 @@ public class ProductAdapter
         return productList.size();
     }
 
+    public void updateList(ArrayList<Product> newList) {
+        productList.clear();
+        productList.addAll(newList);
+        notifyDataSetChanged();
+    }
+
     public static class ProductViewHolder
             extends RecyclerView.ViewHolder {
 
@@ -147,6 +169,7 @@ public class ProductAdapter
         TextView tvCategory;
         TextView tvPrice;
         TextView tvStock;
+        ImageView ivProduct;
 
         public ProductViewHolder(
                 @NonNull View itemView) {
@@ -167,6 +190,10 @@ public class ProductAdapter
 
             tvStock = itemView.findViewById(
                     R.id.tvStock
+            );
+
+            ivProduct = itemView.findViewById(
+                    R.id.ivProduct
             );
         }
     }

@@ -211,6 +211,20 @@
 
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Generate Receipt Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGenerateReceipt"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="22dp"
+                android:text="GENERATE RECEIPT / PDF"
+                android:textStyle="bold"
+                app:backgroundTint="#202B52"
+                app:cornerRadius="17dp"
+                app:icon="@android:drawable/ic_menu_share"
+                app:iconGravity="textStart"
+                app:iconTint="#FFFFFF" />
+
         </LinearLayout>
 
     </ScrollView>
