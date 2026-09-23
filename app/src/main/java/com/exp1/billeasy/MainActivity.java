@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     BottomNavigationView bottomNavigation;
 
     TextView tvRevenue;
+    TextView tvRevenuePercentage;
     TextView tvProducts;
     TextView tvLowStock;
 
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigation = findViewById(R.id.bottomNavigation);
 
         tvRevenue = findViewById(R.id.tvRevenue);
+        tvRevenuePercentage = findViewById(R.id.tvRevenuePercentage);
         tvProducts = findViewById(R.id.tvProducts);
         tvLowStock = findViewById(R.id.tvLowStock);
 
@@ -258,12 +260,35 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadRevenue() {
 
-        double revenue =
+        double todayRevenue =
                 databaseHelper.getTodayRevenue();
+        double yesterdayRevenue =
+                databaseHelper.getYesterdayRevenue();
 
         tvRevenue.setText(
-                "₹" + format(revenue)
+                "₹" + format(todayRevenue)
         );
+
+        if (tvRevenuePercentage != null) {
+            if (yesterdayRevenue == 0) {
+                if (todayRevenue > 0) {
+                    tvRevenuePercentage.setText("↑ 100%");
+                    tvRevenuePercentage.setTextColor(android.graphics.Color.parseColor("#8FE3B0"));
+                } else {
+                    tvRevenuePercentage.setText("0.0%");
+                    tvRevenuePercentage.setTextColor(android.graphics.Color.parseColor("#BEC5DB"));
+                }
+            } else {
+                double percentChange = ((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100.0;
+                if (percentChange >= 0) {
+                    tvRevenuePercentage.setText(String.format(Locale.getDefault(), "↑ %.1f%%", percentChange));
+                    tvRevenuePercentage.setTextColor(android.graphics.Color.parseColor("#8FE3B0"));
+                } else {
+                    tvRevenuePercentage.setText(String.format(Locale.getDefault(), "↓ %.1f%%", Math.abs(percentChange)));
+                    tvRevenuePercentage.setTextColor(android.graphics.Color.parseColor("#FF8A80"));
+                }
+            }
+        }
     }
 
 

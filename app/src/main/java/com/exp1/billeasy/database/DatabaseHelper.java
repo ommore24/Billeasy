@@ -10,6 +10,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.exp1.billeasy.models.Product;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -653,6 +656,135 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
 
         return revenue;
+    }
+
+    public double getYesterdayRevenue() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double revenue = 0;
+
+        Cursor cursor = db.rawQuery("SELECT total, date FROM Bills", null);
+
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_YEAR, -1);
+        String yesterday = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(cal.getTime());
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                do {
+                    double total = cursor.getDouble(cursor.getColumnIndexOrThrow("total"));
+                    String billDate = cursor.getString(cursor.getColumnIndexOrThrow("date"));
+
+                    if (billDate != null && billDate.startsWith(yesterday)) {
+                        revenue += total;
+                    }
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+
+        return revenue;
+    }
+
+    public static class AnalyticsData {
+        public double totalSales = 0.0;
+        public int totalProductsSold = 0;
+        public int totalBills = 0;
+        public double avgBillValue = 0.0;
+        public double totalDiscount = 0.0;
+        public double totalGst = 0.0;
+        public String topSellingProduct = "N/A";
+        public int topSellingQuantity = 0;
+    }
+
+    public AnalyticsData getAnalyticsData(String singleDateStr, Date startDate, Date endDate) {
+        AnalyticsData data = new AnalyticsData();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT id, total, discount, gst, date FROM Bills", null);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+        Map<String, Integer> productQtyMap = new HashMap<>();
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                do {
+                    int billId = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                    double total = cursor.getDouble(cursor.getColumnIndexOrThrow("total"));
+                    double discount = cursor.getDouble(cursor.getColumnIndexOrThrow("discount"));
+                    double gst = cursor.getDouble(cursor.getColumnIndexOrThrow("gst"));
+                    String billDateStr = cursor.getString(cursor.getColumnIndexOrThrow("date"));
+
+                    boolean matches = false;
+
+                    if (singleDateStr != null && !singleDateStr.isEmpty()) {
+                        if (billDateStr != null && billDateStr.startsWith(singleDateStr)) {
+                            matches = true;
+                        }
+                    } else if (startDate != null && endDate != null) {
+                        if (billDateStr != null) {
+                            try {
+                                String datePart = billDateStr;
+                                if (billDateStr.contains(",")) {
+                                    datePart = billDateStr.split(",")[0].trim();
+                                }
+                                Date parsedDate = sdf.parse(datePart);
+                                if (parsedDate != null && !parsedDate.before(startDate) && !parsedDate.after(endDate)) {
+                                    matches = true;
+                                }
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    } else {
+                        // All time
+                        matches = true;
+                    }
+
+                    if (matches) {
+                        data.totalSales += total;
+                        data.totalDiscount += discount;
+                        data.totalGst += gst;
+                        data.totalBills++;
+
+                        Cursor itemCursor = db.rawQuery("SELECT product_name, quantity FROM BillItems WHERE bill_id=?", new String[]{String.valueOf(billId)});
+                        if (itemCursor != null) {
+                            if (itemCursor.moveToFirst()) {
+                                do {
+                                    String pName = itemCursor.getString(itemCursor.getColumnIndexOrThrow("product_name"));
+                                    int qty = itemCursor.getInt(itemCursor.getColumnIndexOrThrow("quantity"));
+                                    data.totalProductsSold += qty;
+                                    if (pName != null && !pName.isEmpty()) {
+                                        Integer currentQty = productQtyMap.get(pName);
+                                    productQtyMap.put(pName, (currentQty == null ? 0 : currentQty) + qty);
+                                    }
+                                } while (itemCursor.moveToNext());
+                            }
+                            itemCursor.close();
+                        }
+                    }
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+
+        if (data.totalBills > 0) {
+            data.avgBillValue = data.totalSales / data.totalBills;
+        }
+
+        String topProduct = null;
+        int maxQty = 0;
+        for (Map.Entry<String, Integer> entry : productQtyMap.entrySet()) {
+            if (entry.getValue() > maxQty) {
+                maxQty = entry.getValue();
+                topProduct = entry.getKey();
+            }
+        }
+
+        if (topProduct != null && maxQty > 0) {
+            data.topSellingProduct = topProduct + " (" + maxQty + " sold)";
+            data.topSellingQuantity = maxQty;
+        }
+
+        return data;
     }
 
 
